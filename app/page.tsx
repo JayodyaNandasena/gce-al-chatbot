@@ -1,5 +1,7 @@
-import { ComponentExample } from "@/components/component-example";
+import MultiSubjectChatbot from "@/components/chat/chatbot";
 
 export default function Page() {
-return <ComponentExample />;
+  return (
+      <MultiSubjectChatbot/>
+  )
 }
