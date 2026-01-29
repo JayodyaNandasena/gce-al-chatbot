@@ -1,15 +1,15 @@
 "use client"
 
 import React, {useEffect, useRef, useState} from "react";
-import {Button} from "@/components/ui/button";
 import {Menu, Send} from "lucide-react";
-import {ScrollArea} from "@/components/ui/scroll-area";
-import {Textarea} from "@/components/ui/textarea";
-import {ChatHistory} from "@/components/chat/chat-history";
-import {SUBJECTS} from "@/components/chat/subject-config";
-import {Message} from "@/components/chat/message";
-import {TypingIndicator} from "@/components/chat/typing-indicator";
-import {SuggestedQuestions} from "@/components/chat/suggested-questions";
+import {SUBJECTS} from "@/components/chat/subject-config.js";
+import {ChatHistory} from "@/components/chat/chat-history.js";
+import {Button} from "@/components/ui/button.js";
+import {ScrollArea} from "@/components/ui/scroll-area.js";
+import {Message} from "@/components/chat/message.js";
+import {TypingIndicator} from "@/components/chat/typing-indicator.js";
+import {Textarea} from "@/components/ui/textarea.js";
+import {SuggestedQuestions} from "@/components/chat/suggested-questions.js";
 
 const MultiSubjectChatbot = () => {
     const [subject, setSubject] = useState('biology');
@@ -56,6 +56,8 @@ const MultiSubjectChatbot = () => {
         }
     }, [messages, isTyping]);
 
+    //
+
     const handleSend = async () => {
         if (!input.trim()) return;
 
@@ -74,22 +76,47 @@ const MultiSubjectChatbot = () => {
         setInput('');
         setIsTyping(true);
 
-        // Simulate AI response
-        setTimeout(() => {
-            const responses = [
-                `Great question about ${subject}! Let me break that down for you. Understanding these fundamental concepts is key to mastering the subject.`,
-                `That's an important topic in ${subject}. Let me explain it step by step so you can understand it clearly.`,
-                `Excellent! This is a fascinating area of ${subject}. Here's what you need to know...`,
-            ];
+        try {
+            // Call the real API
+            const response = await fetch('http://localhost:3000/api/chat/biology', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    question: input,
+                    chatHistory: messages.map(msg => ({
+                        role: msg.role,
+                        content: msg.content
+                    }))
+                }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Failed to get response');
+            }
+
+            const data = await response.json();
 
             const assistantMessage = {
                 role: 'assistant',
-                content: responses[Math.floor(Math.random() * responses.length)]
+                content: data.answer
             };
 
             setMessages(prev => [...prev, assistantMessage]);
+
+        } catch (error) {
+            console.error('Error calling API:', error);
+
+            const errorMessage = {
+                role: 'assistant',
+                content: 'Sorry, I encountered an error. Please try again.'
+            };
+
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
             setIsTyping(false);
-        }, 1500);
+        }
     };
 
     const handleKeyDown = (e) => {
