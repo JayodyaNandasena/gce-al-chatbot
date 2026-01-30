@@ -1,27 +1,23 @@
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-// import { ChatGPTMessage } from "@/types";
+import * as React from "react";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar.js";
 import {
     Accordion,
     AccordionContent,
     AccordionItem,
     AccordionTrigger,
-} from "@/components/ui/accordion";
+} from "@/components/ui/accordion.js";
 import Balancer from "react-wrap-balancer";
 import ReactMarkdown from "react-markdown";
-import React from "react";
-import {sanitizeAndFormatText} from "@/lib/utils";
+import {sanitizeAndFormatText} from "@/lib/utils.js";
 
-// helper to convert newlines to <br /> tags
-const convertNewLines = (text: string) =>
-    text.split("\n").map((line, i) => (
-        <span key={i}>
-      {line}
-            <br />
-    </span>
-    ));
+interface MessageType {
+    role: 'user' | 'assistant';
+    content: string;
+    sources?: string[];
+}
 
 interface MessageProps {
-    message: any;
+    message: MessageType;
     sources: string[];
     config: {
         gradient: string;
@@ -30,12 +26,14 @@ interface MessageProps {
     };
 }
 
-export function Message({ message, sources, config }: MessageProps) {
+export function Message({ message, sources, config }: Readonly<MessageProps>) {
     if (!message.content) return null;
 
-    const formattedContent = convertNewLines(message.content);
     const isUser = message.role !== "assistant";
     const Icon = config.icon;
+
+    // Use sources from props (which come from message.sources in parent)
+    const displaySources = sources;
 
     return (
         <div className={`flex gap-4 mb-6 ${isUser ? "justify-end" : "justify-start"}`}>
@@ -56,14 +54,36 @@ export function Message({ message, sources, config }: MessageProps) {
                         : `bg-white text-gray-800 border ${config.borderColor} shadow-sm`
                 }`}
             >
-                <Balancer>
-                    <p className="text-sm leading-relaxed whitespace-pre-wrap">{formattedContent}</p>
-                </Balancer>
+                <div className="text-sm leading-relaxed prose prose-sm max-w-none">
+                    {isUser ? (
+                        <Balancer>
+                            <p className="whitespace-pre-wrap">{message.content}</p>
+                        </Balancer>
+                    ) : (
+                        <ReactMarkdown
+                            components={{
+                                p: ({children}) => <p className="mb-2 last:mb-0">{children}</p>,
+                                strong: ({children}) => <strong className="font-semibold">{children}</strong>,
+                                ul: ({children}) => <ul className="list-disc pl-5 mb-2">{children}</ul>,
+                                ol: ({children}) => <ol className="list-decimal pl-5 mb-2">{children}</ol>,
+                                li: ({children}) => <li className="mb-1">{children}</li>,
+                                h1: ({children}) => <h1
+                                    className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h1>,
+                                h2: ({children}) => <h2
+                                    className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
+                                h3: ({children}) => <h3
+                                    className="text-sm font-bold mb-2 mt-2 first:mt-0">{children}</h3>,
+                            }}
+                        >
+                            {message.content}
+                        </ReactMarkdown>
+                    )}
+                </div>
 
                 {/* Sources / References */}
-                {!isUser && message.sources && message.sources.length > 0 && (
+                {!isUser && displaySources && displaySources.length > 0 && (
                     <Accordion type="single" collapsible className="mt-2 w-full">
-                        {message.sources.map((source, index) => (
+                        {displaySources.map((source, index) => (
                             <AccordionItem value={`source-${index}`} key={index}>
                                 <AccordionTrigger>{`Source ${index + 1}`}</AccordionTrigger>
                                 <AccordionContent>

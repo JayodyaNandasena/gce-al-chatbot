@@ -4,7 +4,7 @@ export const SUBJECTS = {
     biology: {
         name: 'Biology',
         icon: Dna,
-        gradient: 'from-emerald-500 to-teal-600',
+        gradient: 'from-emerald-700 to-teal-600',
         bgGradient: 'from-emerald-50 via-teal-50 to-cyan-50',
         borderColor: 'border-emerald-200',
         hoverBorder: 'hover:border-emerald-400',
@@ -13,15 +13,15 @@ export const SUBJECTS = {
         greeting: 'Hi! I\'m your Biology Learning Assistant. I can help you understand concepts in cell biology, genetics, ecology, anatomy, and more. What would you like to learn about today?',
         suggestions: [
             "Explain photosynthesis",
-            "What is DNA replication?",
             "Difference between mitosis and meiosis",
-            "How does natural selection work?"
+            "How does natural selection work?",
+            "Explain the nature of microorganisms"
         ]
     },
     chemistry: {
         name: 'Chemistry',
         icon: FlaskConical,
-        gradient: 'from-violet-500 to-purple-600',
+        gradient: 'from-violet-800 to-purple-800',
         bgGradient: 'from-violet-50 via-purple-50 to-fuchsia-50',
         borderColor: 'border-violet-200',
         hoverBorder: 'hover:border-violet-400',
@@ -38,7 +38,7 @@ export const SUBJECTS = {
     physics: {
         name: 'Physics',
         icon: Atom,
-        gradient: 'from-blue-500 to-indigo-600',
+        gradient: 'from-blue-800 to-indigo-800',
         bgGradient: 'from-blue-50 via-indigo-50 to-cyan-50',
         borderColor: 'border-blue-200',
         hoverBorder: 'hover:border-blue-400',
@@ -46,10 +46,7 @@ export const SUBJECTS = {
         iconColor: 'text-blue-600',
         greeting: 'Hey there! I\'m your Physics Learning Assistant. I can help you understand mechanics, thermodynamics, electromagnetism, quantum physics, and more. What would you like to explore?',
         suggestions: [
-            "Explain Newton's laws",
-            "What is quantum mechanics?",
-            "How does electricity work?",
-            "What is relativity?"
+            "Explain Newton's laws"
         ]
     }
 };

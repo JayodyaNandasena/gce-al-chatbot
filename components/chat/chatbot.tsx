@@ -11,10 +11,25 @@ import {TypingIndicator} from "@/components/chat/typing-indicator.js";
 import {Textarea} from "@/components/ui/textarea.js";
 import {SuggestedQuestions} from "@/components/chat/suggested-questions.js";
 
+// Define message type with sources
+type ChatMessage = {
+    role: 'user' | 'assistant';
+    content: string;
+    sources?: string[];
+};
+
+type Chat = {
+    id: number;
+    title: string;
+    timestamp: string;
+    subject: string;
+    messages: ChatMessage[];
+};
+
 const MultiSubjectChatbot = () => {
     const [subject, setSubject] = useState('biology');
     const [sidebarOpen, setSidebarOpen] = useState(false);
-    const [chats, setChats] = useState([
+    const [chats, setChats] = useState<Chat[]>([
         {
             id: 1,
             title: 'Photosynthesis Discussion',
@@ -31,11 +46,11 @@ const MultiSubjectChatbot = () => {
         }
     ]);
     const [activeChat, setActiveChat] = useState(1);
-    const [messages, setMessages] = useState([]);
+    const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
-    const scrollRef = useRef(null);
-    const textareaRef = useRef(null);
+    const scrollRef = useRef<HTMLDivElement>(null);
+    const textareaRef = useRef<HTMLTextAreaElement>(null);
 
     const config = SUBJECTS[subject];
     const Icon = config.icon;
@@ -45,10 +60,11 @@ const MultiSubjectChatbot = () => {
         setMessages([
             {
                 role: 'assistant',
-                content: config.greeting
+                content: config.greeting,
+                sources: []
             }
         ]);
-    }, [activeChat, subject]);
+    }, [activeChat, subject, config.greeting]);
 
     useEffect(() => {
         if (scrollRef.current) {
@@ -56,12 +72,14 @@ const MultiSubjectChatbot = () => {
         }
     }, [messages, isTyping]);
 
-    //
-
     const handleSend = async () => {
         if (!input.trim()) return;
 
-        const userMessage = { role: 'user', content: input };
+        const userMessage: ChatMessage = {
+            role: 'user',
+            content: input,
+            sources: []
+        };
         setMessages(prev => [...prev, userMessage]);
 
         // Update chat title if it's the first message
@@ -77,7 +95,7 @@ const MultiSubjectChatbot = () => {
         setIsTyping(true);
 
         try {
-            // Call the real API
+            // Call the API with streaming
             const response = await fetch('http://localhost:3000/api/chat/biology', {
                 method: 'POST',
                 headers: {
@@ -85,10 +103,7 @@ const MultiSubjectChatbot = () => {
                 },
                 body: JSON.stringify({
                     question: input,
-                    chatHistory: messages.map(msg => ({
-                        role: msg.role,
-                        content: msg.content
-                    }))
+                    chatHistory: []
                 }),
             });
 
@@ -96,21 +111,66 @@ const MultiSubjectChatbot = () => {
                 throw new Error('Failed to get response');
             }
 
-            const data = await response.json();
-
-            const assistantMessage = {
+            // Create assistant message placeholder
+            const assistantMessage: ChatMessage = {
                 role: 'assistant',
-                content: data.answer
+                content: '',
+                sources: []
             };
 
             setMessages(prev => [...prev, assistantMessage]);
 
+            // Read the stream
+            const reader = response.body?.getReader();
+            const decoder = new TextDecoder();
+
+            if (reader) {
+                let fullResponse = '';
+
+                while (true) {
+                    const { done, value } = await reader.read();
+
+                    if (done) break;
+
+                    const chunk = decoder.decode(value, { stream: true });
+
+                    // Check if we've hit the tokens-ended marker
+                    if (chunk.includes('tokens-ended')) {
+                        // Stop processing when we hit the marker
+                        const beforeMarker = chunk.split('tokens-ended')[0];
+                        fullResponse += beforeMarker;
+
+                        // Update final message
+                        setMessages(prev =>
+                            prev.map((msg, idx) =>
+                                idx === prev.length - 1
+                                    ? { ...msg, content: fullResponse.trim() }
+                                    : msg
+                            )
+                        );
+                        break;
+                    }
+
+                    fullResponse += chunk;
+
+                    // Update the message in real-time
+                    setMessages(prev =>
+                        prev.map((msg, idx) =>
+                            idx === prev.length - 1
+                                ? { ...msg, content: fullResponse }
+                                : msg
+                        )
+                    );
+                }
+            }
+
         } catch (error) {
             console.error('Error calling API:', error);
 
-            const errorMessage = {
+            const errorMessage: ChatMessage = {
                 role: 'assistant',
-                content: 'Sorry, I encountered an error. Please try again.'
+                content: 'Sorry, I encountered an error. Please try again.',
+                sources: []
             };
 
             setMessages(prev => [...prev, errorMessage]);
@@ -119,20 +179,20 @@ const MultiSubjectChatbot = () => {
         }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
         if (e.key === 'Enter' && !e.shiftKey) {
             e.preventDefault();
             handleSend();
         }
     };
 
-    const handleSuggestionClick = (question) => {
+    const handleSuggestionClick = (question: string) => {
         setInput(question);
         textareaRef.current?.focus();
     };
 
     const handleNewChat = () => {
-        const newChat = {
+        const newChat: Chat = {
             id: Date.now(),
             title: 'New Chat',
             timestamp: 'Just now',
@@ -144,12 +204,13 @@ const MultiSubjectChatbot = () => {
         setMessages([
             {
                 role: 'assistant',
-                content: config.greeting
+                content: config.greeting,
+                sources: []
             }
         ]);
     };
 
-    const handleSubjectChange = (newSubject) => {
+    const handleSubjectChange = (newSubject: string) => {
         setSubject(newSubject);
         const subjectChats = chats.filter(chat => chat.subject === newSubject);
         if (subjectChats.length > 0) {
@@ -232,7 +293,12 @@ const MultiSubjectChatbot = () => {
                     <ScrollArea ref={scrollRef} className="h-full">
                         <div className="max-w-4xl mx-auto px-4 py-6">
                             {messages.map((message, index) => (
-                                <Message key={index} message={message} config={config} />
+                                <Message
+                                    key={index}
+                                    message={message}
+                                    sources={message.sources || []}
+                                    config={config}
+                                />
                             ))}
 
                             {isTyping && <TypingIndicator config={config} />}
