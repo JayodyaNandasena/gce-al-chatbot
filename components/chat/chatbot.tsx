@@ -134,9 +134,9 @@ const MultiSubjectChatbot = () => {
 
                     const chunk = decoder.decode(value, { stream: true });
 
-                    // Check if we've hit the tokens-ended marker
+                    // Check if tokens-ended marker hit
                     if (chunk.includes('tokens-ended')) {
-                        // Stop processing when we hit the marker
+                        // Stop processing when hit the marker
                         const beforeMarker = chunk.split('tokens-ended')[0];
                         fullResponse += beforeMarker;
 

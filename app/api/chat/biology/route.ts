@@ -1,8 +1,6 @@
 import {NextRequest, NextResponse} from "next/server.js";
 import {callChain} from "@/lib/langchain.js";
 
-export const maxDuration = 60; // 60 seconds timeout
-
 export async function POST(req: NextRequest) {
     const { question, chatHistory } = await req.json();
 
@@ -14,7 +12,6 @@ export async function POST(req: NextRequest) {
     }
 
     try {
-        // Collect the complete response
         const transformStream = new TransformStream();
         const readableStream = await callChain({
             question,

@@ -14,8 +14,9 @@ export const SUBJECTS = {
         suggestions: [
             "Explain photosynthesis",
             "Difference between mitosis and meiosis",
-            "How does natural selection work?",
-            "Explain the nature of microorganisms"
+            // "How does natural selection work?",
+            "Explain the nature of microorganisms",
+            "How does feedback regulation maintain homeostasis at the cellular level?"
         ]
     },
     chemistry: {
@@ -27,7 +28,7 @@ export const SUBJECTS = {
         hoverBorder: 'hover:border-violet-400',
         textColor: 'text-violet-700',
         iconColor: 'text-violet-600',
-        greeting: 'Hello! I\'m your Chemistry Learning Assistant. I can help you with organic chemistry, chemical reactions, stoichiometry, periodic table, and more. What chemistry topic interests you?',
+        greeting: 'Hello! I\'m your Chemistry Learning Assistant. I can help you with organic chemistry, inorganic chemistry, chemical reactions, periodic table, and more. What chemistry topic interests you?',
         suggestions: [
             "Explain chemical bonding",
             "What is oxidation-reduction?",
@@ -44,7 +45,7 @@ export const SUBJECTS = {
         hoverBorder: 'hover:border-blue-400',
         textColor: 'text-blue-700',
         iconColor: 'text-blue-600',
-        greeting: 'Hey there! I\'m your Physics Learning Assistant. I can help you understand mechanics, thermodynamics, electromagnetism, quantum physics, and more. What would you like to explore?',
+        greeting: 'Hey there! I\'m your Physics Learning Assistant. I can help you understand mechanics, thermodynamics, electromagnetism, and more. What would you like to explore?',
         suggestions: [
             "Explain Newton's laws"
         ]

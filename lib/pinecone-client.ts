@@ -1,4 +1,4 @@
-import { Pinecone, ServerlessSpec } from '@pinecone-database/pinecone';
+import { Pinecone } from '@pinecone-database/pinecone';
 import {env} from "@/lib/config.js";
 import {delay} from "@/lib/utils.js";
 
@@ -43,7 +43,7 @@ async function initPineconeClient(subject: string) {
         if (!existingIndexes.includes(indexName)) {
             await createIndex(pc, indexName);
         } else {
-            console.log("Your index already exists. nice !!");
+            console.log("Index already exists!!");
         }
 
         return pc;
